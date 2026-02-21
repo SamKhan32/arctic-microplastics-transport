@@ -35,6 +35,8 @@ Requires:
     numpy, scipy
 """
 
+from pathlib import Path
+
 import numpy as np
 import os
 import sys
@@ -42,13 +44,14 @@ import sys
 # ---------------------------------------------------------------------------
 # Import grid from config
 # ---------------------------------------------------------------------------
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from config import make_grid, NX, NY
 
 # Earth radius [m]
 R_EARTH = 6371000.0
 
-OUT_DIR = "."  # write binaries here; change if needed
+OUT_DIR = "mitgcm_input/"  # write binaries here; change if needed
 
 
 # ---------------------------------------------------------------------------

@@ -1,0 +1,6 @@
+baseline_exp/mitgcm_input/bathy.bin
+baseline_exp/original_input/ibcao_v5_1_2025_400m_ice.tif
+original_data/*.tif
+original_data/*.nc
+mitgcm_input/*.bin
+MITgcm/
