@@ -4,3 +4,6 @@ original_data/*.tif
 original_data/*.nc
 mitgcm_input/*.bin
 MITgcm/
+build/
+baseline_exp/run/input/
+original_data/

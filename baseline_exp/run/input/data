@@ -9,13 +9,13 @@
 # momAdvection=.FALSE.,
  tempStepping=.FALSE.,
  saltStepping=.FALSE.,
- &
+ /
 
 # Elliptic solver parameters
  &PARM02
  cg2dTargetResidual=1.E-7,
  cg2dMaxIters=1000,
- &
+ /
 
 # Time stepping parameters
  &PARM03
@@ -30,19 +30,18 @@
 #-for longer run (3.0 yr):
 # nTimeSteps=77760,
 # monitorFreq=864000.,
- &
+ /
 
 # Gridding parameters
  &PARM04
  usingCurvilinearGrid=.TRUE.,
  delR=5000.,
-horizGridFile='../../mitgcm_input/horizGrid.bin',
- &
+#horizGridFile='../../mitgcm_input/horizGrid.bin.face001.bin',
+ /
 
 # Input datasets
  &PARM05
  bathyFile='../../mitgcm_input/bathy.bin',
  zonalWindFile='../../mitgcm_input/oceTauX.bin',
-meridWindFile='../../mitgcm_input/oceTauY.bin',
-
- &
+ meridWindFile='../../mitgcm_input/oceTauY.bin',
+ /
