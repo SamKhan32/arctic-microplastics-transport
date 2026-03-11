@@ -1,6 +1,6 @@
 # arctic-microplastics-transport
 
-Undergraduate research project modeling microplastics and PFAS transport in the Arctic Ocean using [MITgcm](https://mitgcm.org/) on the ECCO LLC270 lat-lon-cap grid.
+Undergraduate research project modeling microplastics and PFAS transport in the Arctic Ocean using [MITgcm](https://mitgcm.org/). This repository collects all experiments, from an initial barotropic baseline through progressively more complete configurations.
 
 ## Background
 
