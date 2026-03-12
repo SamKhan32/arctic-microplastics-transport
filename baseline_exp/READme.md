@@ -1,4 +1,6 @@
 # NOTE: UNFINISHED
+Currently, this baseline doesn't run - creating my own curvilinear proved to be a nightmare. The true first experiemnt is baseline_exp_llc270.
+I do not guarantee that the code used here will work for anything.
 # Arctic Circulation - Baseline Experiment
 
 Baseline Arctic Ocean simulation using MITgcm with wind-only forcing on a curvilinear grid.

@@ -7,3 +7,4 @@ MITgcm/
 build/
 baseline_exp/run/input/
 original_data/
+mitgcm_input/*.mitgrid

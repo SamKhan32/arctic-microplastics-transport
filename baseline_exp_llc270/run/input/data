@@ -1,0 +1,38 @@
+# Model parameters
+ &PARM01
+ viscAh=1.E3,
+ rhoConst=1027.,
+ gBaro=9.81,
+ rigidLid=.FALSE.,
+ implicitFreeSurface=.TRUE.,
+ tempStepping=.FALSE.,
+ saltStepping=.FALSE.,
+ /
+# Elliptic solver parameters
+ &PARM02
+ cg2dTargetResidual=1.E-4,
+ cg2dMaxIters=2000,
+ /
+# Time stepping parameters
+ &PARM03
+ nIter0=0,
+ nTimeSteps=100,
+ deltaT=300.0,
+ monitorFreq=300.,
+ monitorSelect=2,
+ pChkptFreq=31104000.0,
+ chkptFreq=15552000.0,
+ dumpFreq=86400.0,
+ /
+# Gridding parameters
+ &PARM04
+ usingCurvilinearGrid=.TRUE.,
+ horizGridFile='arctic_cap_v2.mitgrid',
+ delR=5000.,
+ /
+# Input datasets
+ &PARM05
+ bathyFile='bathy_arctic.bin',
+ zonalWindFile='taux_jan.bin',
+ meridWindFile='tauy_jan.bin',
+ /
