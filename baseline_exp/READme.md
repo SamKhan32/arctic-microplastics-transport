@@ -1,4 +1,4 @@
-#NOTE: UNFINISHED
+# NOTE: UNFINISHED
 # Arctic Circulation - Baseline Experiment
 
 Baseline Arctic Ocean simulation using MITgcm with wind-only forcing on a curvilinear grid.
