@@ -2,16 +2,14 @@
 plot_arctic_output.py
 ---------------------
 Produces a North Polar Stereographic animated GIF of current speed
-from MITgcm tiled binary output (LLC270 Arctic cap, barotropic).
+from MITgcm single-CPU-IO binary output (LLC270 Arctic cap, barotropic).
 
-XC/YC from ECCO-GRID_06.nc are used to place each grid cell correctly
-in geographic space, so the irregular LLC curvilinear geometry is
-handled properly by passing lon/lat directly to cartopy PlateCarree
-transform.
+Requires useSingleCpuIO=.TRUE. in PARM01 -- output files are:
+    FIELD.0000000000.data  (single file per field per timestep)
 
 Directory layout (run from experiment root):
     baseline_exp_llc270/
-        output/              # tiled .data/.meta files
+        output/              # .data/.meta files
         original_data/
             ECCO-GRID_06.nc
         analysis/
@@ -22,7 +20,7 @@ Usage:
     python analysis/scripts/plot_arctic_output.py
 
 Dependencies:
-    numpy, matplotlib, cartopy, imageio
+    numpy, matplotlib, cartopy, imageio, netCDF4
 """
 
 import os
@@ -50,56 +48,37 @@ ECCO_NC     = os.path.join(PROJECT_ROOT, "original_data", "ECCO-GRID_06.nc")
 # -----------------------------------------------------------------------
 # GRID PARAMETERS
 # -----------------------------------------------------------------------
-SNX  = 27
-SNY  = 30
-NPX  = 10
-NPY  = 9
-NX   = SNX * NPX   # 270
-NY   = SNY * NPY   # 270
-
+NX    = 270
+NY    = 270
 DTYPE = ">f4"      # float32 big-endian (writeBinaryPrec default)
 
 # GIF frame duration in seconds
 FRAME_DURATION = 0.5
 
 # -----------------------------------------------------------------------
-# TILE I/O
+# FILE I/O
 # -----------------------------------------------------------------------
 
-def read_tile(path):
-    arr = np.fromfile(path, dtype=DTYPE)
-    if arr.size != SNX * SNY:
+def read_field(output_dir, field, timestep):
+    """
+    Read a single-CPU-IO output file -> (NY, NX) float32 array.
+    Filename format: FIELD.0000000000.data
+    """
+    fname = f"{field}.{timestep:010d}.data"
+    fpath = os.path.join(output_dir, fname)
+    if not os.path.exists(fpath):
+        raise FileNotFoundError(f"Missing file: {fname}\n  Looked in: {output_dir}")
+    arr = np.fromfile(fpath, dtype=DTYPE)
+    if arr.size != NX * NY:
         raise ValueError(
-            f"{os.path.basename(path)}: expected {SNX*SNY} values, "
-            f"got {arr.size}"
+            f"{fname}: expected {NX*NY} values, got {arr.size}"
         )
-    return arr.reshape(SNY, SNX)
-
-
-def assemble_tiles(output_dir, field, timestep):
-    """
-    Assemble 90 tiles into (NY, NX).
-    Filename format: FIELD.TTTTTTTTTT.COL.ROW.data
-    COL: 1-10 (first index, x axis, nPx=10)
-    ROW: 1-9  (second index, y axis, nPy=9)
-    """
-    ts_str = f"{timestep:010d}"
-    domain = np.full((NY, NX), np.nan, dtype=np.float32)
-    for col in range(1, NPX + 1):
-        for row in range(1, NPY + 1):
-            fname = f"{field}.{ts_str}.{col:03d}.{row:03d}.data"
-            fpath = os.path.join(output_dir, fname)
-            if not os.path.exists(fpath):
-                raise FileNotFoundError(f"Missing tile: {fname}")
-            tile = read_tile(fpath)
-            x0 = (col - 1) * SNX
-            y0 = (row - 1) * SNY
-            domain[y0:y0 + SNY, x0:x0 + SNX] = tile
-    return domain
+    return arr.reshape(NY, NX)
 
 
 def list_timesteps(output_dir, field="U"):
-    pattern = re.compile(rf"^{field}\.(\d{{10}})\.\d{{3}}\.\d{{3}}\.data$")
+    """Return sorted list of integer timesteps available for a field."""
+    pattern = re.compile(rf"^{field}\.(\d{{10}})\.data$")
     seen = set()
     for fname in os.listdir(output_dir):
         m = pattern.match(fname)
@@ -109,15 +88,20 @@ def list_timesteps(output_dir, field="U"):
 
 
 def mask_dry(arr):
+    """Replace exactly-zero cells with NaN (MITgcm dry cell fill value)."""
     out = arr.copy()
     out[arr == 0.0] = np.nan
     return out
 
 # -----------------------------------------------------------------------
-# GRID COORDS
+# GRID COORDINATES
 # -----------------------------------------------------------------------
 
 def load_grid_coords(ecco_nc):
+    """
+    Load XC, YC (tracer cell lon/lat) from ECCO-GRID_06.nc.
+    Returns two (NY, NX) float arrays.
+    """
     if not os.path.exists(ecco_nc):
         raise FileNotFoundError(f"ECCO grid file not found: {ecco_nc}")
     try:
@@ -148,19 +132,14 @@ DATA_CRS   = ccrs.PlateCarree()
 
 def render_frame(xc, yc, speed, timestep, vmax, delta_t=300):
     """
-    Render one GIF frame: North Polar Stereographic speed map.
-    Returns a (H, W, 3) uint8 numpy array.
+    Render one GIF frame -> (H, W, 3) uint8 numpy array.
     """
     day = timestep * delta_t / 86400.0
 
     fig = plt.figure(figsize=(7, 7), dpi=120)
     ax = fig.add_subplot(1, 1, 1, projection=PROJECTION)
-
-    # Restrict view to Arctic cap (roughly 60N and above)
     ax.set_extent([-180, 180, 60, 90], crs=DATA_CRS)
 
-    # Filled speed field -- pass actual lon/lat so cartopy reprojects
-    # the irregular LLC grid correctly
     pc = ax.pcolormesh(
         xc, yc, speed,
         cmap="plasma",
@@ -170,10 +149,9 @@ def render_frame(xc, yc, speed, timestep, vmax, delta_t=300):
         rasterized=True
     )
 
-    # Coastlines and gridlines
     ax.add_feature(cfeature.COASTLINE, linewidth=0.6, color="white", zorder=3)
     ax.add_feature(cfeature.LAND, facecolor="#2a2a2a", zorder=2)
-    gl = ax.gridlines(
+    ax.gridlines(
         crs=DATA_CRS, draw_labels=False,
         linewidth=0.4, color="white", alpha=0.3, linestyle="--"
     )
@@ -192,7 +170,6 @@ def render_frame(xc, yc, speed, timestep, vmax, delta_t=300):
     fig.patch.set_facecolor("#0d0d0d")
     ax.set_facecolor("#0d0d0d")
 
-    # Render to numpy array via in-memory PNG
     buf = io.BytesIO()
     plt.savefig(buf, format="png", bbox_inches="tight",
                 facecolor=fig.get_facecolor())
@@ -200,8 +177,7 @@ def render_frame(xc, yc, speed, timestep, vmax, delta_t=300):
     buf.seek(0)
     frame = imageio.imread(buf)
     buf.close()
-    return frame[:, :, :3]   # drop alpha if present
-
+    return frame[:, :, :3]
 
 # -----------------------------------------------------------------------
 # MAIN
@@ -221,44 +197,38 @@ def main():
     print("Scanning timesteps...")
     timesteps = list_timesteps(OUTPUT_DIR, field="U")
     if not timesteps:
-        print(f"ERROR: no U tiles found in {OUTPUT_DIR}")
+        print(f"ERROR: no U files found in {OUTPUT_DIR}")
         sys.exit(1)
-    # Skip t=0 (initial condition, all zeros)
     timesteps = [ts for ts in timesteps if ts > 0]
     print(f"  Animating {len(timesteps)} frames: {timesteps}")
 
-    # Compute a consistent vmax across all frames using the 99th percentile
-    # of the first non-zero timestep to avoid outliers dominating the scale
     print("Computing global color scale...")
-    u0 = mask_dry(assemble_tiles(OUTPUT_DIR, "U", timesteps[0]))
-    v0 = mask_dry(assemble_tiles(OUTPUT_DIR, "V", timesteps[0]))
+    u0 = mask_dry(read_field(OUTPUT_DIR, "U", timesteps[0]))
+    v0 = mask_dry(read_field(OUTPUT_DIR, "V", timesteps[0]))
     spd0 = np.sqrt(u0**2 + v0**2)
     vmax = float(np.nanpercentile(spd0, 99)) * 1.5
     print(f"  vmax = {vmax:.4e} m/s")
 
-    # Render frames
     frames = []
     for ts in timesteps:
         day = ts * 300 / 86400.0
         print(f"  Rendering Day {day:.0f} (timestep {ts})...")
-        u   = mask_dry(assemble_tiles(OUTPUT_DIR, "U", ts))
-        v   = mask_dry(assemble_tiles(OUTPUT_DIR, "V", ts))
+        u   = mask_dry(read_field(OUTPUT_DIR, "U",   ts))
+        v   = mask_dry(read_field(OUTPUT_DIR, "V",   ts))
         spd = np.sqrt(u**2 + v**2)
         spd[spd == 0.0] = np.nan
+        print(
+            f"    U max={np.nanmax(np.abs(u)):.3e}  "
+            f"V max={np.nanmax(np.abs(v)):.3e}  "
+            f"speed max={np.nanmax(spd):.3e} m/s"
+        )
         frame = render_frame(xc, yc, spd, ts, vmax)
         frames.append(frame)
 
-    # Write GIF
     gif_path = os.path.join(FIGURES_DIR, "arctic_circulation.gif")
     print(f"Writing GIF -> {gif_path}")
-    imageio.mimwrite(
-        gif_path,
-        frames,
-        duration=FRAME_DURATION,
-        loop=0          # loop forever
-    )
-    print(f"Done. {len(frames)} frames, {FRAME_DURATION}s per frame.")
-    print(f"GIF saved to: {gif_path}")
+    imageio.mimwrite(gif_path, frames, duration=FRAME_DURATION, loop=0)
+    print(f"Done. {len(frames)} frames at {FRAME_DURATION}s/frame.")
 
 
 if __name__ == "__main__":
