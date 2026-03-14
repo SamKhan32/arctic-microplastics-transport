@@ -44,8 +44,6 @@ readBinaryPrec defaulted to 32, silently zeroing all hFacW values and producing 
 velocity fields. Fixed by setting readBinaryPrec=64 and writing all binaries as
 big-endian float64.
 
-![hFacW debug](analysis/figures/hfacc_debug.png)
-
 **Wind stress coordinate rotation** -- ERA5 stress is in geographic east/north coordinates
 but LLC270 Arctic cap grid axes are not geographically aligned. Fixed by rotating into
 grid-relative coordinates using CS/SN from ECCO-GRID_06.nc.
