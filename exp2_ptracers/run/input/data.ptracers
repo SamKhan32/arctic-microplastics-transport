@@ -1,0 +1,16 @@
+# PTRACERS runtime configuration - exp2_ptracers
+ &PTRACERS_PARM01
+  PTRACERS_numInUse        = 2,
+  PTRACERS_IC_file(1)      = 'ptracers_ic_tr1.bin',
+  PTRACERS_IC_file(2)      = 'ptracers_ic_tr2.bin',
+  PTRACERS_advScheme(1)    = 2,
+  PTRACERS_advScheme(2)    = 2,
+  PTRACERS_diffKh(1)       = 0.0,
+  PTRACERS_diffKh(2)       = 0.0,
+  PTRACERS_diffKr(1)       = 0.0,
+  PTRACERS_diffKr(2)       = 0.0,
+  PTRACERS_ref(1)          = 0.0,
+  PTRACERS_ref(2)          = 0.0,
+  PTRACERS_dumpFreq(1)     = 432000.0,
+  PTRACERS_dumpFreq(2)     = 432000.0,
+ \
