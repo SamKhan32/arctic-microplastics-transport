@@ -44,23 +44,23 @@ readBinaryPrec defaulted to 32, silently zeroing all hFacW values and producing 
 velocity fields. Fixed by setting readBinaryPrec=64 and writing all binaries as
 big-endian float64.
 
-![hFacW debug](analysis/figures/prerun/hfacc_debug.png)
+![hFacW debug](analysis/figures/hfacc_debug.png)
 
 **Wind stress coordinate rotation** -- ERA5 stress is in geographic east/north coordinates
 but LLC270 Arctic cap grid axes are not geographically aligned. Fixed by rotating into
 grid-relative coordinates using CS/SN from ECCO-GRID_06.nc.
 
-![Wind stress check](analysis/figures/prerun/wind_stress_check.png)
+![Wind stress check](analysis/figures/wind_stress_check.png)
 
 ## Results
 
-![2-year circulation](analysis/figures/postrun/arctic_circulation_2YEARS.gif)
+![2-year circulation](analysis/figures/arctic_circulation_2YEARS.gif)
 
-![Quiver animation](analysis/figures/postrun/arctic_quiver.gif)
+![Quiver animation](analysis/figures/arctic_quiver.gif)
 
-![Final timestep](analysis/figures/postrun/quiver_0000052560.png)
+![Final timestep](analysis/figures/quiver_0000052560.png)
 
-![Polar overview](analysis/figures/postrun/arctic_polar.png)
+![Polar overview](analysis/figures/arctic_polar.png)
 
 ## Conclusion
 
