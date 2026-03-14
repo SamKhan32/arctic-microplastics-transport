@@ -24,22 +24,19 @@ Single-layer barotropic, closed basin.
 Wind-only forcing, barotropic, no tracers, no open boundaries.
 
 ## Directory Structure
-
 ```
 baseline_exp_llc270/
+|_ input_code/     -- preprocessing scripts (generate, rotate, wind stress)
+|_ mitgcm_input/   -- generated binaries (.bin, .mitgrid)
+|_ original_data/  -- raw source files (.nc, .tif, ECCO grid files)
 |_ run/
 |  |_ code/        -- SIZE.h and any CPP option files
-|  |_ input/       -- namelists (data, data.pkg, eedata) and generated binaries
-|  |_ build/       -- compiled on HPC, never tracked
-|  |_ execution/   -- SLURM job scripts
+|  |_ input/       -- namelists (data, data.pkg, eedata)
 |_ analysis/
 |  |_ scripts/     -- plotting and verification scripts
-|  |_ figures/
-|     |_ prerun/   -- grid, bathymetry, and forcing verification
-|     |_ postrun/  -- circulation output plots and animations
-|_ archive/        -- superseded inputs and old run outputs
+|  |_ figures/     -- all output figures and animations
+|_ output/         -- HPC run outputs (gitignored)
 ```
-
 ## Key Bugs Resolved
 
 **Binary precision mismatch** -- Bathymetry and wind stress written as float64 but
