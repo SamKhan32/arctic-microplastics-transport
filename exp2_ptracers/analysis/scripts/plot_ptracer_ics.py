@@ -31,7 +31,7 @@ for ax, tracer, title in zip(axes, tracers, titles):
     ax.add_feature(cfeature.COASTLINE, linewidth=0.5)
     ax.gridlines(draw_labels=False, linewidth=0.4, color='gray', linestyle='--')
 
-    masked = np.ma.masked_where(tracer == 0, tracer)
+    masked = np.ma.masked_where(np.isnan(tracer), tracer)
     ax.pcolormesh(XC, YC, masked, transform=ccrs.PlateCarree(),
                   cmap='plasma', shading='auto')
 
