@@ -1,0 +1,16 @@
+# generated binary inputs
+run/input/*.bin
+run/input/*.mitgrid
+
+# build directory - compiled on HPC
+run/build/*
+
+# HPC output files
+run/output/*
+
+# archive - old runs, never tracked
+archive/*
+
+# large data outputs
+analysis/figures/prerun/*
+analysis/figures/postrun/*
