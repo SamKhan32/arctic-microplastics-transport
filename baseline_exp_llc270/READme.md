@@ -1,66 +1,79 @@
-# Arctic Circulation - Baseline Experiment
+# Arctic Circulation - Experiment 1: Baseline Barotropic
 
-Baseline Arctic Ocean simulation using MITgcm with wind-only forcing on a curvilinear grid.
+Baseline Arctic Ocean simulation using MITgcm with wind-only forcing on the LLC270 lat-lon-cap grid.
+Single-layer barotropic, closed basin.
 
-## Grid
+## Experiment Summary
 
 | Parameter | Value |
 |-----------|-------|
-| Pole location | (-40E, 75N) - interior Greenland |
-| Dimensions | 1530 x 520 cells |
-| Resolution | ~10.7 km |
-| Coverage | Full Arctic Ocean + key straits |
-| Domain | Rotated lon -90 to 90, rotated lat 40 to 90 |
-
-Curvilinear displaced-pole grid. Closed basin, no open boundaries.
+| Grid | LLC270 Arctic cap tile (tile 6, 0-indexed) |
+| Domain | 270 x 270 cells |
+| Vertical layers | 1 (Nr=1, delR=5000m) |
+| Wet cells | 52,533 |
+| MPI decomposition | sNx=27, sNy=30, nPx=10, nPy=9 (90 ranks) |
+| Time step | 1200 s |
+| Run length | 2 years (nTimeSteps=52560) |
+| Output frequency | 5-day snapshots (dumpFreq=432000) |
+| Wind forcing | ERA5 1991-2020 monthly climatology, 12-month periodic |
+| Max uvel | ~0.24 m/s |
+| Max advcfl | ~0.033 |
 
 ## Physics
 
-Wind-only forcing, barotropic, no tracers. Intended as a baseline to isolate the Arctic Ocean's response to climatological wind stress before adding thermodynamics or baroclinic structure.
+Wind-only forcing, barotropic, no tracers, no open boundaries.
 
-## Input Code
-
-All preprocessing scripts live in `input_code/`. Outputs go to `mitgcm_input/` and diagnostic plots to `analysis/`.
-
-### `config.py`
-Shared grid parameters and `make_grid()` function. All other scripts import from here. Defines the displaced-pole rotation and returns `LON`, `LAT` as `(NY, NX)` geographic coordinate arrays.
-
-### `bathy.py`
-Takes IBCAO v5 (500m resolution) as input. Sets all depths above sea level to zero, interpolates onto the curvilinear grid (MITgcm expects depths in meters, negative down), flood-fills to isolate the Arctic basin, and manually closes the Bering Strait. Writes `mitgcm_input/bathy.bin` and saves a diagnostic plot to `analysis/`.
-
-### `metrics.py`
-Computes MITgcm metric files from the `LON`/`LAT` arrays using finite differencing on the sphere. Writes the following big-endian float32 binaries to `mitgcm_input/`:
-
-- `DXG.bin`, `DYG.bin` - grid face lengths [m]
-- `DXC.bin`, `DYC.bin` - cell center spacings [m]
-- `RAC.bin` - cell areas [m^2]
-- `angleCosC.bin`, `angleSinC.bin` - grid orientation angle relative to true east
-
-### `windStress.py`
-Downloads ERA5 1991-2020 monthly mean surface stress (`avg_iews`, `avg_inss`) via the CDS API, averages into a 12-month climatology, interpolates onto the curvilinear grid, rotates from geographic (east/north) into grid-relative coordinates using the angle files, and masks to ocean points using the bathymetry. Writes `oceTauX_01.bin` through `oceTauX_12.bin` and `oceTauY_01.bin` through `oceTauY_12.bin` to `mitgcm_input/`.
-
-Run with `--no-download` to skip the CDS request and reuse an existing NetCDF.
-
-### `visualize_grid.py`
-Plots the curvilinear grid on an Arctic polar stereographic projection. Diagnostic only.
-
-### `visualize_wind_stress.py`
-Plots climatological wind stress vectors overlaid on bathymetry for one or all months. Vectors are rotated back to geographic coordinates for display. Run with `--month N` to plot a single month, or without arguments for all 12. Saves PNGs to `analysis/`.
-
-## Original Data
-
-Raw source files in `original_data/`:
-
-- `ibcao_v5_1_2025_400m_ice.tif` - IBCAO v5 bathymetry (input to `bathy.py`)
-- `era5_stress_monthly_1991_2020.nc` - ERA5 surface stress download (input to `windStress.py`)
-
-## Dependencies
+## Directory Structure
 
 ```
-numpy
-scipy
-matplotlib
-cartopy
-netCDF4
-cdsapi
+baseline_exp_llc270/
+|_ run/
+|  |_ code/        -- SIZE.h and any CPP option files
+|  |_ input/       -- namelists (data, data.pkg, eedata) and generated binaries
+|  |_ build/       -- compiled on HPC, never tracked
+|  |_ execution/   -- SLURM job scripts
+|_ analysis/
+|  |_ scripts/     -- plotting and verification scripts
+|  |_ figures/
+|     |_ prerun/   -- grid, bathymetry, and forcing verification
+|     |_ postrun/  -- circulation output plots and animations
+|_ archive/        -- superseded inputs and old run outputs
 ```
+
+## Key Bugs Resolved
+
+**Binary precision mismatch** -- Bathymetry and wind stress written as float64 but
+readBinaryPrec defaulted to 32, silently zeroing all hFacW values and producing zero
+velocity fields. Fixed by setting readBinaryPrec=64 and writing all binaries as
+big-endian float64.
+
+![hFacW debug](analysis/figures/prerun/hfacc_debug.png)
+
+**Wind stress coordinate rotation** -- ERA5 stress is in geographic east/north coordinates
+but LLC270 Arctic cap grid axes are not geographically aligned. Fixed by rotating into
+grid-relative coordinates using CS/SN from ECCO-GRID_06.nc.
+
+![Wind stress check](analysis/figures/prerun/wind_stress_check.png)
+
+## Results
+
+![2-year circulation](analysis/figures/postrun/arctic_circulation_2YEARS.gif)
+
+![Quiver animation](analysis/figures/postrun/arctic_quiver.gif)
+
+![Final timestep](analysis/figures/postrun/quiver_0000052560.png)
+
+![Polar overview](analysis/figures/postrun/arctic_polar.png)
+
+## Conclusion
+
+The simulation runs stably with plausible velocity magnitudes, confirming the grid,
+bathymetry, and wind forcing pipeline are correctly configured. However, the Beaufort
+Gyre and Transpolar Drift are essentially absent -- no coherent rotational structure
+develops over the full 2-year run.
+
+The primary suspect is the closed basin geometry. Without open boundaries at Bering,
+Fram, and Davis Straits, the model cannot support the basin-scale sea surface height
+gradients that organize Arctic circulation. This result directly motivates Experiment 3,
+where opening the southern boundary is expected to be the minimum change needed to
+recover these features.
