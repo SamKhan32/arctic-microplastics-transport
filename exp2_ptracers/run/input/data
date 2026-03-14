@@ -39,7 +39,7 @@ externForcingCycle      = 31104000.,
  /
 # Input datasets
  &PARM05
- bathyFile='bathy_arctic_ecco_no_transpose.bin',
+ bathyFile='bathy_arctic.bin',
  zonalWindFile='taux_monthly_rot.bin',
  meridWindFile='tauy_monthly_rot.bin',
  /
