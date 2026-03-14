@@ -206,7 +206,7 @@ def main():
     u0 = mask_dry(read_field(OUTPUT_DIR, "U", timesteps[0]))
     v0 = mask_dry(read_field(OUTPUT_DIR, "V", timesteps[0]))
     spd0 = np.sqrt(u0**2 + v0**2)
-    vmax = float(np.nanpercentile(spd0, 99)) * 1.5
+    vmax = float(np.nanpercentile(spd0, 90))
     print(f"  vmax = {vmax:.4e} m/s")
 
     frames = []
