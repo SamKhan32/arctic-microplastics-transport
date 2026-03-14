@@ -19,7 +19,7 @@
 # Time stepping parameters
  &PARM03
  nIter0=0,
- nTimeSteps=52560,
+ nTimeSteps=720,
  deltaT=1200.0,
  monitorFreq=432000.0,
  monitorSelect=2,
