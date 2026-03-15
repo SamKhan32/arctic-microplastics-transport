@@ -11,6 +11,3 @@ run/output/*
 # archive - old runs, never tracked
 archive/*
 
-# large data outputs
-analysis/figures/prerun/*
-analysis/figures/postrun/*
