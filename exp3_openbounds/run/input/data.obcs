@@ -1,0 +1,7 @@
+&OBCS_PARM01
+  OB_Iwest(16:213) = 198*1,
+  OB_Ieast(69:230) = 162*-1,
+&END
+
+&OBCS_PARM02
+&END
