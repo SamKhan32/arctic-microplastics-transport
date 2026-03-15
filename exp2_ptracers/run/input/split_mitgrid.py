@@ -5,7 +5,7 @@ sNx, sNy = 27, 30
 nPx, nPy = 10, 9
 n_fields = 16
 
-data = np.fromfile('arctic_cap_v2.mitgrid', dtype='>f8')
+data = np.fromfile('arctic_cap.mitgrid', dtype='>f8')
 fields = data.reshape(n_fields, Ny, Nx)
 
 rank = 0
@@ -22,7 +22,7 @@ for j in range(nPy):
         tile = np.zeros((n_fields, sNy+1, sNx+1), dtype='>f8')
         tile[:, :y1e-y0, :x1e-x0] = fields[:, y0:y1e, x0:x1e]
 
-        fname = f'arctic_cap_v2.mitgrid.face{rank:03d}.bin'
+        fname = f'arctic_cap.mitgrid.face{rank:03d}.bin'
         tile.astype('>f8').tofile(fname)
 
 print(f"Written {rank} face files")
