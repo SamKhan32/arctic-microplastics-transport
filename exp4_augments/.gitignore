@@ -1,0 +1,9 @@
+# generated binary inputs
+run/input/*.bin
+run/input/*.mitgrid
+run/input/*.bin
+# build directory - compiled on HPC
+run/build/*
+
+# archive - old runs, never tracked
+archive/*
