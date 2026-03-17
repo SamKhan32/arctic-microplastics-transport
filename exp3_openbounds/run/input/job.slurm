@@ -18,11 +18,11 @@ module purge
 module load gcc/13.2.0
 module load openmpi/4.1.6
 set -euo pipefail
-cd /users/sphill86/exp2_ptracers/run/execution
+cd /users/sphill86/exp3_openbounds/run/execution
 export OMP_NUM_THREADS=1
 echo "Launching MITgcm with $SLURM_NTASKS MPI ranks..."
 srun -n 90 ./mitgcmuv
-tar -cf ~/arctic_output_exp2.tar *.data *.meta
+tar -cf ~/arctic_output_exp3.tar *.data *.meta
 echo "======================================================"
 echo "End Time : $(date)"
 echo "======================================================"

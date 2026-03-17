@@ -19,7 +19,7 @@ import os
 
 # --- paths ---
 MITGRID  = 'run/input/arctic_cap.mitgrid'
-DATA_DIR = 'archive/2026_03_15_arctic_output_exp3'
+DATA_DIR = 'archive/arctic_output_exp3_coeff_fixed'
 OUT_DIR  = 'analysis/figures/postrun'
 OUT_FILE = os.path.join(OUT_DIR, 'tr1_animation.gif')
 
