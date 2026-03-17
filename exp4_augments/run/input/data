@@ -10,6 +10,7 @@
  readBinaryPrec=64,
  hFacMin=0.01,
  useSingleCpuIO=.TRUE.,
+bottomDragQuadratic=1.E-3,
  /
 # Elliptic solver parameters
  &PARM02
@@ -19,7 +20,7 @@
 # Time stepping parameters
  &PARM03
  nIter0=0,
- nTimeSteps=52560,
+ nTimeSteps=105192,
  deltaT=1200.0,
  monitorFreq=432000.0,
  monitorSelect=2,

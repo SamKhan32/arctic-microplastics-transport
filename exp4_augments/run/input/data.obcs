@@ -4,4 +4,8 @@
 &END
 
 &OBCS_PARM02
+ useOrlanskiWest=.TRUE.,
+ useOrlanskiEast=.TRUE.,
+CMAX=500.,
+cvelTimeScale=12000.,
 &END
