@@ -20,11 +20,11 @@ BATHY_FILE = "input/bathy_arctic.bin"
 OUT_FILE   = "input/tr3_ic.bin"
 NX, NY     = 270, 270
 NR         = 1
-REJECT_DEG = 2.0   # max distance in degrees to accept snap; 0 to disable
+REJECT_DEG = 4.0   # max distance in degrees to accept snap; 0 to disable
 
 # PFAS source locations (lat, lon)
 PFAS_SOURCES = [
-    (69.0, -135.0, "Mackenzie River"),
+    (70.5, -133.0, "Mackenzie River"),
     (66.0, -169.0, "Bering Strait"),
     (79.0,    0.0, "Fram Strait"),
 ]

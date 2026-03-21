@@ -6,4 +6,4 @@ run/input/*.bin
 run/build/*
 
 # archive - old runs, never tracked
-archive/*
+archives/*
