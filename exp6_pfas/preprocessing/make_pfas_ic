@@ -1,0 +1,76 @@
+"""
+make_pfas_ic.py
+Generate tr3 initial condition binary for EXP6_PFAS.
+Three PFAS point sources, value 1.0 at nearest wet cell.
+Nr=1, grid 270x270, big-endian float64.
+
+Usage (from EXP6_PFAS root):
+    python make_pfas_ic.py
+
+Outputs: input/tr3_ic.bin
+"""
+
+import numpy as np
+import netCDF4 as nc
+import os
+
+# --- config ---
+GRID_FILE = "../shared/ECCO-GRID_06.nc"  # adjust path if needed
+BATHY_FILE = "input/bathy_arctic.bin"
+OUT_FILE   = "input/tr3_ic.bin"
+NX, NY     = 270, 270
+NR         = 1
+REJECT_DEG = 2.0   # max distance in degrees to accept snap; 0 to disable
+
+# PFAS source locations (lat, lon)
+PFAS_SOURCES = [
+    (69.0, -135.0, "Mackenzie River"),
+    (66.0, -169.0, "Bering Strait"),
+    (79.0,    0.0, "Fram Strait"),
+]
+
+# --- load grid ---
+print("Loading grid...")
+ds = nc.Dataset(GRID_FILE)
+# LLC270 tile 7 Arctic cap: XC/YC shape (270,270)
+# Variable names may be XC/YC or lonc/latc -- adjust if needed
+try:
+    lon2d = ds.variables["XC"][:]   # (270,270)
+    lat2d = ds.variables["YC"][:]
+except KeyError:
+    lon2d = ds.variables["lonc"][:]
+    lat2d = ds.variables["latc"][:]
+ds.close()
+
+# --- load bathymetry to find wet cells ---
+print("Loading bathy...")
+bathy = np.fromfile(BATHY_FILE, dtype=">f8").reshape(NY, NX)
+wet = bathy < 0.0   # True where ocean
+
+# --- build IC array ---
+tr3 = np.zeros((NR, NY, NX), dtype=">f8")
+
+for (src_lat, src_lon, label) in PFAS_SOURCES:
+    # great-circle-free proxy: use squared angular distance
+    dlon = lon2d - src_lon
+    dlat = lat2d - src_lat
+    dist2 = dlon**2 + dlat**2   # degrees^2, good enough for snapping
+
+    # mask dry cells
+    dist2_wet = np.where(wet, dist2, np.inf)
+    flat_idx  = np.argmin(dist2_wet)
+    j, i      = np.unravel_index(flat_idx, (NY, NX))
+    min_dist  = np.sqrt(dist2_wet[j, i])
+
+    if REJECT_DEG > 0 and min_dist > REJECT_DEG:
+        print(f"  SKIP {label}: nearest wet cell {min_dist:.2f} deg away (>{REJECT_DEG} deg)")
+        continue
+
+    tr3[0, j, i] = 1.0
+    print(f"  SET  {label}: ({src_lat}N, {src_lon}E) -> grid ({j},{i}), "
+          f"actual ({lat2d[j,i]:.2f}N, {lon2d[j,i]:.2f}E), dist={min_dist:.3f} deg")
+
+# --- write ---
+os.makedirs(os.path.dirname(OUT_FILE) or ".", exist_ok=True)
+tr3.tofile(OUT_FILE)
+print(f"Wrote {OUT_FILE}  shape={tr3.shape}  nonzero={np.count_nonzero(tr3)}")

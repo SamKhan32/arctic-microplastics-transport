@@ -1,0 +1,4 @@
+ &PACKAGES
+ usePTRACERS=.TRUE.,
+ useOBCS=.TRUE.,
+ /

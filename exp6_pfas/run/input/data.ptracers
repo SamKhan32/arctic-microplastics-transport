@@ -1,0 +1,8 @@
+# PTRACERS runtime configuration - exp2_ptracers
+ &PTRACERS_PARM01
+  PTRACERS_numInUse        = 2,
+  PTRACERS_initialFile(1)  = 'ptracers_ic_tr1_v2.bin',
+  PTRACERS_initialFile(2)  = 'ptracers_ic_tr2_v2.bin',
+  PTRACERS_advScheme(1)    = 77,
+  PTRACERS_advScheme(2)    = 77,
+ &END
